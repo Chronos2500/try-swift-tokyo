@@ -206,6 +206,7 @@ public struct GuidanceView: View {
           .padding(.horizontal, 20)
           .padding(.vertical, 12)
         }
+        .foregroundStyle(.white)
         .glassEffect(.regular.tint(.accentColor).interactive(), in: .capsule)
         .padding(.horizontal)
         directions
