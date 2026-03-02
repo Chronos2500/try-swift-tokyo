@@ -160,6 +160,7 @@ public struct ScheduleView: View {
         }
       }
       .pickerStyle(.segmented)
+      .controlSize(.large)
       .padding(.horizontal)
       switch store.selectedDay {
       case .day1:

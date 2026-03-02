@@ -242,6 +242,7 @@ public struct GuidanceView: View {
       }
     }
     .pickerStyle(.segmented)
+    .controlSize(.large)
     .padding(.horizontal)
   }
 
