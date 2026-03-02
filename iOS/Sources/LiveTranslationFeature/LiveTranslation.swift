@@ -40,8 +40,6 @@ public struct LiveTranslation: Sendable {
     /// The task of connecting stream
     var chatStreamTask: Task<Void, Never>? = nil
 
-    /// selected language sheet
-    var isSelectedLanguageSheet: Bool = false
     /// showing last chat
     var isShowingLastChat: Bool = false
 
@@ -59,7 +57,6 @@ public struct LiveTranslation: Sendable {
     case binding(BindingAction<State>)
     case connectChatStream
     case disconnectChatStream
-    case changeLangCode(String)
     case view(View)
 
     case validateSelectedLangCode([LanguageEntity.Response.LanguageItem])
@@ -72,8 +69,6 @@ public struct LiveTranslation: Sendable {
       case onAppear
       case connectStream
       case disconnectStream
-      case selectLangCode(String)
-      case setSelectedLanguageSheet(Bool)
       case setShowingLastChat(Bool)
       case speakText(String, itemId: String)
       case stopSpeaking
@@ -116,13 +111,6 @@ public struct LiveTranslation: Sendable {
         }.cancellable(id: connectChatRoomTaskId)
       case .view(.disconnectStream):
         return .cancel(id: connectChatRoomTaskId)
-      case .view(.selectLangCode(let langCode)):
-        return .run { send in
-          await send(.changeLangCode(langCode))
-        }
-      case .view(.setSelectedLanguageSheet(let flag)):
-        state.isSelectedLanguageSheet = flag
-        return .none
       case .view(.setShowingLastChat(let flag)):
         state.isShowingLastChat = flag
         return .none
@@ -162,12 +150,6 @@ public struct LiveTranslation: Sendable {
           state.$selectedLangCode.withLock { $0 = fallbackCode }
         }
         return .none
-      case .changeLangCode(let newLangCode):
-        state.$selectedLangCode.withLock { $0 = newLangCode }
-        return .run { [state] send in
-          await loadLangSet(langCode: newLangCode, send: send)
-          await loadTranslation(chatList: state.chatList, newLangCode)
-        }
       case .handleResponseChat(let chatItem):
         return .run { [state] send in
           await handleResponseChat(chatItem, state: state, send: send)
@@ -183,6 +165,12 @@ public struct LiveTranslation: Sendable {
       case .checkUpdateTRWaitingQueue:
         return .run { [state] send in
           await checkUpdateTRWaitingQueue(state: state, send: send)
+        }
+      case .binding(\.selectedLangCode):
+        let newLangCode = state.selectedLangCode
+        return .run { [state] send in
+          await loadLangSet(langCode: newLangCode, send: send)
+          await loadTranslation(chatList: state.chatList, newLangCode)
         }
       case .binding:
         return .none
@@ -421,7 +409,7 @@ public struct LiveTranslationView: View {
       }
       .toolbar {
         if !store.isConnected {
-          ToolbarItem(placement: .topBarLeading) {
+          ToolbarItem(placement: .topBarTrailing) {
             Button {
               send(.connectStream)
             } label: {
@@ -429,35 +417,44 @@ public struct LiveTranslationView: View {
             }
           }
         }
-        ToolbarItem(placement: .topBarTrailing) {
-          HStack {
-            Button {
-              send(.setShowingSpeedControl(!store.isShowingSpeedControl))
-            } label: {
-              Image(systemName: "speedometer")
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            HStack(spacing: 0) {
+                Button {
+                    send(.setShowingSpeedControl(!store.isShowingSpeedControl))
+                } label: {
+                    Image(systemName: "speedometer")
+                }
+                languagePicker
             }
-            Button {
-              send(.setSelectedLanguageSheet(!store.isSelectedLanguageSheet))
-            } label: {
-              let selectedLanguage =
-                store.langSet?.langCodingKey(store.selectedLangCode) ?? ""
-              Text(selectedLanguage)
-              Image(systemName: "globe")
-            }
-          }
-          .sheet(isPresented: $store.isSelectedLanguageSheet) {
-            SelectLanguageSheet(
-              languageList: store.langList,
-              langSet: store.langSet,
-              selectedLanguageAction: { langCode in
-                send(.selectLangCode(langCode))
-                send(.setSelectedLanguageSheet(false))
-              }
-            )
-            .presentationDetents([.medium, .large])
-          }
         }
       }
+    }
+  }
+
+  @ViewBuilder
+  var languagePicker: some View {
+      Picker(selection: $store.selectedLangCode) {
+          ForEach(availableLanguages, id: \.langCode) { lang in
+          Text(lang.langTitle)
+            .tag(lang.langCode)
+        }
+      } label: {
+          Image(systemName: "globe")
+      } currentValueLabel: {
+          let selectedLanguage =
+                          store.langSet?.langCodingKey(store.selectedLangCode) ?? ""
+          Text(selectedLanguage)
+      }
+      .pickerStyle(.menu)
+  }
+
+  private var availableLanguages: [(langCode: String, langTitle: String)] {
+    store.langList.compactMap { lang in
+    guard let title = store.langSet?.langCodingKey(lang.langCode) else {
+      return nil
+    }
+      return (lang.langCode, title)
     }
   }
 
