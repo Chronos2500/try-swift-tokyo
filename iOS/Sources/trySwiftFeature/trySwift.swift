@@ -110,6 +110,7 @@ public struct TrySwiftView: View {
       }
     }
     .navigationTitle(Text("try! Swift", bundle: .module))
+    .toolbarTitleDisplayMode(.inlineLarge)
   }
 
   @ViewBuilder var root: some View {
@@ -219,6 +220,7 @@ public struct TrySwiftView: View {
       .padding()
     }
     .navigationTitle(Text("try! Swift", bundle: .module))
+    .toolbarTitleDisplayMode(.inlineLarge)
   }
 }
 

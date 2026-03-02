@@ -186,6 +186,7 @@ public struct ScheduleView: View {
       send(.onAppear)
     })
     .navigationTitle(Text("Schedule", bundle: .module))
+    .toolbarTitleDisplayMode(.inlineLarge)
     .searchable(text: $store.searchText, isPresented: $store.isSearchBarPresented)
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {

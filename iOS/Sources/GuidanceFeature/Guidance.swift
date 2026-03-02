@@ -214,6 +214,7 @@ public struct GuidanceView: View {
           .padding()
       }
       .navigationTitle(Text("Venue", bundle: .module))
+      .toolbarTitleDisplayMode(.inlineLarge)
     }
     .lookAroundViewer(isPresented: $store.isLookAroundPresented, scene: $store.lookAround)
     .onAppear {

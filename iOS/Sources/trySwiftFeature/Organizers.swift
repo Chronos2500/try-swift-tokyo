@@ -98,6 +98,7 @@ public struct OrganizersView: View {
       send(.onAppear)
     }
     .navigationTitle(Text("Meet Organizers", bundle: .module))
+    .toolbarTitleDisplayMode(.inlineLarge)
   }
 }
 

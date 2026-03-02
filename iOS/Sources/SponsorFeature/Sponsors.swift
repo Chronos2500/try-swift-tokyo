@@ -111,6 +111,7 @@ public struct SponsorsListView: View {
         .padding()
       }
       .navigationTitle(Text("Sponsors", bundle: .module))
+      .toolbarTitleDisplayMode(.inlineLarge)
     } else {
       ProgressView()
     }

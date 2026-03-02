@@ -413,6 +413,7 @@ public struct LiveTranslationView: View {
         send(.connectStream)
       }
       .navigationTitle(Text("Live translation", bundle: .module))
+      .toolbarTitleDisplayMode(.inlineLarge)
       .safeAreaInset(edge: .bottom) {
         if store.isShowingSpeedControl {
           speedControlView
